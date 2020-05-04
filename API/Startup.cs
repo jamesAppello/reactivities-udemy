@@ -32,6 +32,13 @@ namespace API
             {
                 opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
+            services.AddCors(opt => 
+            {
+                opt.AddPolicy("CorsPolicy", policy => 
+                {
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000"); // now to add this to the config method as middleware
+                });
+            });
             services.AddControllers();
         }
 
@@ -42,10 +49,18 @@ namespace API
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            } 
+            else 
+            {
+                // The default HSTS value is 30 days. You may want to change this for
+                // production scenarios, see https://aka.ms/aspnetcore-hsts.
+                // app.UseHsts();
             }
+
             //  \/ we will add this back in later!! \/
             // app.UseHttpsRedirection();
-
+            app.UseCors("CorsPolicy");
+            // app.UseMvc();
             app.UseRouting();
 
             // we will add to this to make it work...initially it wont do a thing.
