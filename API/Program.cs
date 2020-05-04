@@ -32,6 +32,8 @@ namespace API
                 {
                     var context = services.GetRequiredService<DataContext>();
                     context.Database.Migrate();
+                    // Seeded data from zipfile being called to context
+                    Seed.SeedData(context);
                 }
                 catch (Exception ex)
                 {

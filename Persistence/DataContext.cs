@@ -13,6 +13,7 @@ namespace Persistence
         }
         //ADD as a service
         public DbSet<Value> Values { get; set; }
+        public DbSet<Activity> Activities { get; set; }
 
         // seeding data
         // override method
