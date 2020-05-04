@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
+import { Header, Icon, List } from 'semantic-ui-react';
 
 import axios from 'axios';
 
@@ -16,7 +17,6 @@ class App extends Component {
     // THIS IS WHERE YOU WOULD GET DATA FROM AN API
     // AXIOS(is a promise-based method)
     axios.get('http://localhost:5000/api/values').then((response) => {
-      console.log(response);
       this.setState({
         values: response.data
       });
@@ -25,17 +25,18 @@ class App extends Component {
   render() {
     // RENDER
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} alt="logo" className="App-logo"/>
-          <ul>
+      <>
+        <Header as='h2'>
+          <Icon name='plug' />
+          <Header.Content>Uptime Guarantee</Header.Content>
+        </Header>
+        <List>
             {/* using 'any is just like using regular js' */}
             {this.state.values.map((value: any) => (
-              <li key={value.id}>{value.name}</li>
+              <List.Item key={value.id}>{value.name}</List.Item>
             ))}
-          </ul>
-        </header>
-      </div>
+        </List>
+      </>
     );
   };
 };
