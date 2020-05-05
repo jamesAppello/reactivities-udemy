@@ -46,5 +46,10 @@ namespace API.Controllers
             command.Id = id;
             return await _mediator.Send(command); // THEN send command now that both guid and command are parsed together
         }
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Unit>> Delete(Guid id)
+        {
+            return await _mediator.Send(new Delete.Command{Id = id});
+        }
     }
 }
