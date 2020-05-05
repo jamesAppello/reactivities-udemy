@@ -38,5 +38,13 @@ namespace API.Controllers
             // * specify from body [] << "dont need it***"
             return await _mediator.Send(command);
         }
+
+        [HttpPut("{id}")] // need to give rootParams bc: 'we are updating a resource'
+        public async Task<ActionResult<Unit>> Edit(Guid id, Edit.Command command)
+        {
+            // specify id of activity
+            command.Id = id;
+            return await _mediator.Send(command); // THEN send command now that both guid and command are parsed together
+        }
     }
 }
