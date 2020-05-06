@@ -1,8 +1,11 @@
-import React, { Component } from 'react';
-import { Header, Icon, List } from 'semantic-ui-react';
+import React, { Component, useState, useEffect } from 'react';
+import { Header, Icon, List, Container } from 'semantic-ui-react';
 
 import axios from 'axios';
 import { IActivity } from '../models/activity';
+import NavBar from '../../features/nav/NavBar';
+import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard';
+
 
 interface IState {
   // define what is in our state
@@ -10,39 +13,48 @@ interface IState {
 }
 
 
-class App extends Component<{}, IState> {
+const App = () => {
   // LOCAL STATE
-  readonly state: IState = {
-    activities: [] // only way we should update is with this.setState method(-r:'prop')
-  };
-  // LIFECYCLE
-  componentDidMount() {
-    // rerender and update state
-    // THIS IS WHERE YOU WOULD GET DATA FROM AN API
-    // AXIOS(is a promise-based method)
-    axios.get<IActivity[]>('http://localhost:5000/api/activities').then((response) => {
-      this.setState({
-        activities: response.data
-      });
-    });
+  // useState_hook
+  const [activities, setActivities] = useState<IActivity[]>([]); // default type: naver
+  const [selectedActivity, setSelectedActivity] = useState<IActivity | null>(null); // leaving blank -> the type will be IActivity or undefined
+  const [editMode, setEditMode] = useState(false);
+
+  const handleSelectActivity = (id: string)=> {
+    setSelectedActivity(activities.filter(a => a.id === id)[0]);
   }
-  render() {
+
+  const handleOpenCreateForm = () => {
+    setSelectedActivity(null);
+    setEditMode(true);
+  }
+
+  // LIFECYCLE
+  // useEffect_hook
+  useEffect(() => { // like having componentDidMount, componentDidUpdate, componentWillUnmount all in one!
+    axios
+      .get<IActivity[]>('http://localhost:5000/api/activities')
+      .then((res) => {
+        setActivities(res.data);
+      });
+  }, []); // if you want it to run asynchronously('only once':<< when_called) then insert an empty array a an extra parameter after the cb
+  
     // RENDER
     return (
       <>
-        <Header as='h2'>
-          <Icon name='arrow circle up' />
-          <Header.Content>Reactivities</Header.Content>
-        </Header>
-        <List>
-            {/* using 'any is just like using regular js' */}
-            {this.state.activities.map((activity) => (
-              <List.Item key={activity.id}>{activity.title}</List.Item>
-            ))}
-        </List>
+        <NavBar openCreateForm={handleOpenCreateForm} />
+        <Container style={{marginTop: '7em'}}>
+          <ActivityDashboard 
+            activities={activities} 
+            selectActivity={handleSelectActivity} 
+            selectedActivity={selectedActivity}
+            editMode={editMode}
+            setEditMode={setEditMode} 
+            setSelectedActivity={setSelectedActivity}
+            />
+        </Container>
       </>
     );
-  };
 };
 
 export default App;
