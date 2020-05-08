@@ -1,5 +1,5 @@
-import React, { Component, useState, useEffect } from 'react';
-import { Header, Icon, List, Container } from 'semantic-ui-react';
+import React, { useState, useEffect } from 'react';
+import { Container } from 'semantic-ui-react';
 
 import axios from 'axios';
 import { IActivity } from '../models/activity';
@@ -22,11 +22,30 @@ const App = () => {
 
   const handleSelectActivity = (id: string)=> {
     setSelectedActivity(activities.filter(a => a.id === id)[0]);
-  }
+    setEditMode(false);
+  };
 
   const handleOpenCreateForm = () => {
     setSelectedActivity(null);
     setEditMode(true);
+  };
+
+  const forgeNewActivity = (activity: IActivity) => {
+    // use existing activities, and use comma to add NEW activity to the activities array
+    setActivities([ ...activities, activity ]);
+    setSelectedActivity(activity);
+    setEditMode(false);
+  };
+  const handleTheChangeUp = (activity: IActivity) => {
+    // filer thru the existing activities to find where the ids are NOT equal
+    // comma then pass in new activity (editied!)
+    setActivities([ ...activities.filter(a => a.id !== activity.id), activity ]);
+    setSelectedActivity(activity);
+    setEditMode(false);
+  };
+
+  const handleDeleteActivity = (id: string) => {
+    setActivities([...activities.filter(a => a.id !== id)]);
   }
 
   // LIFECYCLE
@@ -35,7 +54,12 @@ const App = () => {
     axios
       .get<IActivity[]>('http://localhost:5000/api/activities')
       .then((res) => {
-        setActivities(res.data);
+        let activities: IActivity[] = []; // b4 we set activities we will loop thru resp.data
+        res.data.forEach(activity => {
+          activity.date = activity.date.split('.')[0];
+          activities.push(activity);
+        })
+        setActivities(activities);
       });
   }, []); // if you want it to run asynchronously('only once':<< when_called) then insert an empty array a an extra parameter after the cb
   
@@ -51,6 +75,9 @@ const App = () => {
             editMode={editMode}
             setEditMode={setEditMode} 
             setSelectedActivity={setSelectedActivity}
+            createActivity={forgeNewActivity}
+            editActivity={handleTheChangeUp}
+            deleteActivity={handleDeleteActivity}
             />
         </Container>
       </>
