@@ -1,45 +1,39 @@
-import React, { useEffect, useContext } from 'react';
+import React from 'react';
 import { Container } from 'semantic-ui-react';
-import { IActivity } from '../models/activity';
 import NavBar from '../../features/nav/NavBar';
-import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard';
-import Loading from './Loading';
-import ActivityStore from '../stores/activityStore';
+import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard'; //acts as a middlemand for props-state from store
 import { observer } from 'mobx-react-lite';
-
-interface IState {
-  // define what is in our state
-  activities: IActivity[] // <-- this way declares activities to be an array of activities extending the interface we made in models/
-}
-
-
-const App = () => {
-  // define our CONTEXT
-  const activityStore = useContext(ActivityStore);
+import { 
+  Route, 
+  withRouter, // higher order component --> takes App as param --> returns new App component with rootProps to access 
+  RouteComponentProps
+} from 'react-router-dom';
+import HomePage from '../../features/home/HomePage';
+import ActivityForm from '../../features/activities/form/ActivityForm';
+import ActivityDetails from '../../features/activities/details/ActivityDetails';
 
 
-  // LIFECYCLE
-  // useEffect_hook
-  useEffect(() => { // like having componentDidMount, componentDidUpdate, componentWillUnmount all in one!
-    // bc we are using a method inside out useEffect
-    // have to tell the dependency array what it needs to run this function
-    activityStore.loadActivArr()
-  }, [activityStore]); // if you want it to run asynchronously('only once':<< when_called) then insert an empty array a an extra parameter after the cb
-  
-
-  if (activityStore.loadingInit) return <Loading content='loading your shit....' />
+const App: React.FC<RouteComponentProps> = ({ location }) => {
 
     // RENDER
     return (
       <>
-        <NavBar />
-        <Container style={{marginTop: '7em'}}>
-          
-          {/* dashboard acts as a 'middleman' for passing state via props */}
-          <ActivityDashboard />
-        </Container>
+        <Route exact path='/' component={HomePage} />
+        <Route 
+          path={'/(.+)'} //route&anythingElse will match 
+          render={() => (
+            <>
+            <NavBar />
+            <Container style={{marginTop: '7em'}}>
+              <Route exact path='/activities' component={ActivityDashboard} />
+              <Route path='/activities/:id' component={ActivityDetails} />
+              <Route key={location.key} path={['/createActivity', '/manage/:id']} component={ActivityForm} />
+            </Container>
+            </>
+          )}
+        />
       </>
     );
 };
 
-export default observer(App);
+export default withRouter(observer(App));

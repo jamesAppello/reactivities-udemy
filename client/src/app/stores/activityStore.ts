@@ -1,26 +1,25 @@
-import { observable, action, computed, configure, runInAction} from 'mobx';
+import { observable, action, computed, runInAction, decorate} from 'mobx';
 import 'mobx-react-lite/batchingForReactDom'; // this gets rid of the batching error!
 import { createContext, SyntheticEvent } from 'react';
 import { IActivity } from '../models/activity';
 import agent from '../api/agent';
 
-configure({ enforceActions: 'always' }); // initially adding strict mode will break the app
+
+// configure({ enforceActions: 'always' }); // initially adding strict mode will break the app
 // to fix this we can override to allow the actions to run on observables.
 
 class ActivityStore {
     // this is how we store our Activities
-    @observable activityReg = new Map(); // this is to store activities into an observable map!
-    @observable activities: IActivity[] = [];
-    @observable selectedActivity: IActivity | undefined = undefined; //give a union type to be able to return a null value ** actually changed to undefined
-    @observable loadingInit = false;
-    @observable editMode = false;
-    @observable submitting = false;
-    @observable target = '';
+    activityReg = new Map(); // this is to store activities into an observable map!
+    activity: IActivity | null = null; 
+    loadingInit = false;
+    submitting = false;
+    target = '';
 
     //we use computed props when we already have the data inside
     //the store ...BUT we can work out the final results should be based on existing data
     //data is usually best!
-    @computed get activitiesByDate() {
+    get activitiesByDate() {
         return Array.from(this.activityReg.values()).sort(
             (a, b) => Date.parse(a.date) - Date.parse(b.date)
         );
@@ -29,7 +28,7 @@ class ActivityStore {
     // create an action
     // *in mobx we go to api to get activities and store them in observable
     // *bc we are going to be changing the state, it will be an array OF-TYPE- 'activity'
-    @action loadActivArr = async () => {
+    loadActivArr = async () => {
         this.loadingInit = true; // in redux we cant use the 'this' KW bc we are mutating state
         try {
             const activities = await agent.Activities.list();
@@ -48,15 +47,44 @@ class ActivityStore {
             console.log(err);
         }
     };
+
+    loadActivity = async (id: string) => {
+        let activity = this.getActivity(id);
+        if (activity) {
+            this.activity = activity;
+        } else {
+            this.loadingInit = true;
+            try {
+                activity = await agent.Activities.details(id);
+                runInAction('get specific activity', () => {
+                    this.activity = activity;
+                    this.loadingInit = false;
+                });
+            } catch (err) {
+                runInAction('get activity exception', () => {
+                    this.loadingInit = false;
+                });
+                console.log(err);
+            }
+        }
+    };
+
+    clearActivity = () => {
+        this.activity = null;
+    };
+
+    // HELPER \/ -- for 'loadActivity'
+    getActivity = (id: string) => {
+        return this.activityReg.get(id);
+    };
     
-    @action createActivity = async (activity: IActivity) => {
+    createActivity = async (activity: IActivity) => {
         // add loading indicator
         this.submitting = true;
         try {
             await agent.Activities.create(activity);
             runInAction('post new activity',() => {
                 this.activityReg.set(activity.id, activity);
-                this.editMode = false;
                 this.submitting = false;
             });
         } catch (err) {
@@ -68,14 +96,13 @@ class ActivityStore {
     };
 
 
-    @action editActivity = async (activity: IActivity) => {
+    editActivity = async (activity: IActivity) => {
         this.submitting = true;
         try {
             await agent.Activities.update(activity);
             runInAction('change of plans', () => {
                 this.activityReg.set(activity.id, activity);
-                this.selectedActivity = activity;
-                this.editMode = false;
+                this.activity = activity;
                 this.submitting = false;
             });
         } catch (err) {
@@ -86,7 +113,7 @@ class ActivityStore {
         }
     };
 
-    @action deleteActivity = async (event: SyntheticEvent<HTMLButtonElement>, id: string) => {
+    deleteActivity = async (event: SyntheticEvent<HTMLButtonElement>, id: string) => {
         this.submitting = true;
         this.target = event.currentTarget.name;
         try {
@@ -105,30 +132,25 @@ class ActivityStore {
         }
     }
 
-    @action openCreateForm = () => {
-        this.editMode = true;
-        this.selectedActivity = undefined;
-    }
 
-    @action openEditForm = (id: string) => {
-        this.selectedActivity = this.activityReg.get(id);
-        this.editMode = true;
-    }
-
-    @action cancelSelectedActivity = () => {
-        this.selectedActivity = undefined;
-    }
-
-    @action cancelFormOpen = () => {
-        this.editMode = false;
-    }
-
-    @action selectActivity = (id: string) => {
-        this.selectedActivity = this.activityReg.get(id);
-        this.editMode = false;
-    }
+    
 }
 
+// use decorate method here to define our props for mobx
+decorate(ActivityStore, {
+    activityReg: observable,
+    activity: observable,
+    loadingInit: observable,
+    submitting: observable,
+    target: observable,
+    activitiesByDate: computed,
+    loadActivArr: action,
+    createActivity: action,
+    editActivity: action,
+    deleteActivity: action,
+    loadActivity: action,
+    clearActivity: action
+})
 
 // use react contextAPI to put store into context
 export default createContext(new ActivityStore());

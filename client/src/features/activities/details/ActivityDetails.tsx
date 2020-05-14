@@ -1,18 +1,32 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { Card, Image, Button } from 'semantic-ui-react';
 import ActivityStore from '../../../app/stores/activityStore';
 import { observer } from 'mobx-react-lite';
+import { RouteComponentProps, Link } from 'react-router-dom';
+import Loading from '../../../app/layout/Loading';
 
+interface DetailParams {
+    id: string;
+};
 
-const ActivityDetails: React.FC = () => {
+const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({ 
+    match,
+    history 
+}) => {
     
     const activityStore = useContext(ActivityStore);
     const { 
-        selectedActivity: activity, 
-        openEditForm,
-        cancelSelectedActivity,
-        // cancelFormOpen 
+        activity,
+        loadActivity,
+        loadingInit
     } = activityStore;
+
+    useEffect(() => {
+        loadActivity(match.params.id);
+    }, [loadActivity, match.params.id])
+
+    // return <h1>Activity Details</h1>
+    if (loadingInit || !activity) return <Loading content='Loading...' />;
 
     return (
         <Card fluid>
@@ -27,13 +41,14 @@ const ActivityDetails: React.FC = () => {
         <Card.Content extra>
             <Button.Group widths={2}>
                 <Button 
+                    as={Link}
+                    to={`/manage/${activity.id}`}
                     basic 
                     color='blue' 
                     content='Edit' 
-                    onClick={() => openEditForm(activity!.id)} // only displays if there is an actitivity to show.. thats why we use the bang symbol 
                 />
                 <Button 
-                    onClick={cancelSelectedActivity} // ** we need to be able to cancel this event...aswell as for the open edit method
+                    onClick={() => history.push('/activities')} // ** we need to be able to cancel this event...aswell as for the open edit method
                     basic 
                     color='grey' 
                     content='Cancel' 
