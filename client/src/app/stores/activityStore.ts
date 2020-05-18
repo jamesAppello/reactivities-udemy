@@ -19,11 +19,22 @@ class ActivityStore {
     //we use computed props when we already have the data inside
     //the store ...BUT we can work out the final results should be based on existing data
     //data is usually best!
-    get activitiesByDate() {
-        return Array.from(this.activityReg.values()).sort(
+    get activitiesByDate() { /** COMPUTED_PROPERTY   */
+        return this.groupActivitiesByDate(Array.from(this.activityReg.values()));
+    }; //ADD_HELPER_METHOD: groupActivitiesByDate
+    groupActivitiesByDate(activities: IActivity[]) {
+        // create [] for our sorted actvities
+        const srtActvities = activities.sort(
             (a, b) => Date.parse(a.date) - Date.parse(b.date)
         );
-    }
+        // in development this is ow we can see what is happening
+        return Object.entries(srtActvities.reduce((activities, activity) => {
+            const date = activity.date.split('T')[0];
+            activities[date] = activities[date] ? [...activities[date], activity] : [activity];
+            return activities;
+        }, {} as  {[key: string]: IActivity[]}));
+    }    
+
 
     // create an action
     // *in mobx we go to api to get activities and store them in observable
@@ -40,6 +51,7 @@ class ActivityStore {
                 });    
                 this.loadingInit = false;
             });
+            console.log(this.groupActivitiesByDate(activities));
         } catch (err) {
             runInAction('load activites error',() => { // it is !mandatory to set a name to the runInAction methods
                 this.loadingInit = false;

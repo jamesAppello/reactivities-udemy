@@ -1,7 +1,8 @@
 import React from 'react';
-import { Menu, Container, Button } from 'semantic-ui-react';
+import { Menu, Container, Button, Icon } from 'semantic-ui-react';
 import { observer } from 'mobx-react-lite';
 import { NavLink } from 'react-router-dom';
+
 
 
 const NavBar: React.FC = () => {
@@ -9,8 +10,9 @@ const NavBar: React.FC = () => {
         <Menu fixed='top' inverted>
             <Container>
                 <Menu.Item header as={NavLink} exact to='/'>
-                    <img src="/assets/logo.png" alt="logo" style={{ marginRight: '10px' }} />
-                    Reactivities
+                    {/* <img src="/assets/logo.png" alt="logo" style={{ marginRight: '10px' }} /> */}
+                    <Icon name='group' />
+                    <p>Reactivities</p>
                 </Menu.Item>
                 <Menu.Item name='Activities' as={NavLink} to='/activities' />
                 <Menu.Item>
