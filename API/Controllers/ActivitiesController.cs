@@ -10,7 +10,9 @@ namespace API.Controllers
 {
     // any controller needs a route, an attribute, and needs to derive from the MVC controller base class
     [Route("api/[controller]")]
-    [ApiController]
+    [ApiController] // gives us automatic 400-responses and saves us from needed to check if theres a validation error
+                    // another task our ApiController does for us : 'Binding Source Parameter Inferrance'
+                    // bc we areusing this it will infer where it is coming from
     public class ActivitiesController : ControllerBase
     {
         private readonly IMediator _mediator;

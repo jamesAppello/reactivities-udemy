@@ -13,10 +13,7 @@ interface DetailParams {
     id: string;
 };
 
-const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({ 
-    match,
-    history 
-}) => {
+const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({ match }) => {
     
     const activityStore = useContext(ActivityStore);
     const { 
@@ -27,10 +24,16 @@ const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({
 
     useEffect(() => {
         loadActivity(match.params.id);
-    }, [loadActivity, match.params.id])
+    }, [loadActivity, match.params.id]); // *!* remember to add dependencies *!*
 
     // return <h1>Activity Details</h1>
-    if (loadingInit || !activity) return <Loading content='Loading...' />;
+    if (loadingInit) // removed " || !activity " *** 
+        return <Loading content='Loading...' />;
+
+    // for if in the event the url attempts to load an activity that does not exist
+    if (!activity) {
+        return <h2>Activity Not Found | <strong>NET_ERR::404</strong></h2>
+    }
 
     return (
         <Grid>

@@ -51,7 +51,6 @@ class ActivityStore {
                 });    
                 this.loadingInit = false;
             });
-            console.log(this.groupActivitiesByDate(activities));
         } catch (err) {
             runInAction('load activites error',() => { // it is !mandatory to set a name to the runInAction methods
                 this.loadingInit = false;

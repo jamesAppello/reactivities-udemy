@@ -14,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Application.Activities;
+using FluentValidation.AspNetCore;
+using API.Middleware;
 
 namespace API
 {
@@ -42,16 +44,27 @@ namespace API
                 });
             });
             services.AddMediatR(typeof(List.Handler).Assembly);
-            services.AddControllers();
+            services.AddControllers()
+                .AddFluentValidation(cfg => 
+                {
+                    cfg.RegisterValidatorsFromAssemblyContaining<Create>();
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        // ADD MIDDLEWARE AS IT COMES IN && OUT OF PIPELINE
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        // +MIDDLEWARE...  
+        //...AS IT COMES IN && OUT OF PIPELINE
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env) 
+        //*ORDERING IS IMPORTANT inside THIS method*
+        // exception delegates should be caught early in the pipeline-exhange
+        // so that they catch the exceptions that would occur later on, early asap.
         {
+            // newMIDDLEWARE
+            app.UseMiddleware<ErrorHandlingMiddleware>(); //from 'API.Middleware'
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                // what we get here we can always go back to and look in our terminal*************
+                // app.UseDeveloperExceptionPage(); //using our own error_handling_middleware
             } 
             else 
             {

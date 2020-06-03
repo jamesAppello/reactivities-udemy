@@ -4,6 +4,9 @@ using System;
 
 using MediatR;
 using Persistence;
+using FluentValidation;
+using Application.Errors;
+using System.Net;
 
 namespace Application.Activities
 {
@@ -25,6 +28,22 @@ namespace Application.Activities
             public string City { get; set; }
             public string Venue { get; set; }
         }
+
+
+        public class CommandValidator : AbstractValidator<Command>
+        {
+            public CommandValidator()
+            {
+                RuleFor(x => x.Title).NotEmpty();
+                RuleFor(x => x.Description).NotEmpty();
+                RuleFor(x => x.Category).NotEmpty();
+                RuleFor(x => x.Date).NotEmpty();
+                RuleFor(x => x.City).NotEmpty();
+                RuleFor(x => x.Venue).NotEmpty();
+            }
+        }
+
+
         public class Handler : IRequestHandler<Command>
         {
             private readonly DataContext _context;
@@ -41,7 +60,7 @@ namespace Application.Activities
                 if (activity == null)
                     // stop execution without returning to API controller
                     // DO THAT by throwing an EXCEPTION!
-                    throw new Exception("Could not find the activity you were looking for!");
+                    throw new RestException(HttpStatusCode.NotFound, new {activity = "Not found"});
                 // accomodate the edit!
                 activity.Title = request.Title ?? activity.Title; // this COULD be null.... it hasn't changed!
                 activity.Description = request.Description ?? activity.Description;
