@@ -25,6 +25,7 @@ axios.interceptors.response.use(undefined, error => {
     if (status === 500) {
         toast.error('INTERNAL_SERVER_ERROR');
     }
+    throw error;
 });
 
 const resBody = (res: AxiosResponse) => res.data;
