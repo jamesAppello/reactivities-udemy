@@ -12,7 +12,7 @@ namespace API.Controllers
     [Route("api/[controller]")]
     [ApiController] // gives us automatic 400-responses and saves us from needed to check if theres a validation error
                     // another task our ApiController does for us : 'Binding Source Parameter Inferrance'
-                    // bc we areusing this it will infer where it is coming from
+                    // bc we are using this it will infer where it is coming from
     public class ActivitiesController : ControllerBase
     {
         private readonly IMediator _mediator;

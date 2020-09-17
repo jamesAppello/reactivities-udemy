@@ -36,7 +36,6 @@ namespace API.Middleware
             //implement logic here
             object errors = null;
             // look at type of exception via switch
-            //***why did i refer to errors in switch?!?!? lmao fixed it tho.
             switch (ex)  
             {
                 case RestException re:
@@ -45,9 +44,9 @@ namespace API.Middleware
                     context.Response.StatusCode = (int)re.Code;
                     break;
                 case Exception e:
-                logger.LogError(ex, "SERVER_ERROR");
-                errors = string.IsNullOrWhiteSpace(e.Message) ? "Error" : e.Message;
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError; 
+                    logger.LogError(ex, "SERVER_ERROR");
+                    errors = string.IsNullOrWhiteSpace(e.Message) ? "Error" : e.Message;
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError; 
                 break; 
             }
             context.Response.ContentType = "application/json";

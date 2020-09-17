@@ -1,9 +1,10 @@
 ﻿using Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence
 {
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<AppUser> // bc we specified <AppUser> here we wont have to add as a 'database set'
     {
         // this class is to allow us to query our database
         public DataContext(DbContextOptions options) : base(options)
@@ -18,6 +19,8 @@ namespace Persistence
         // override method
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            base.OnModelCreating(builder); // this allow us to give use a primary key of string
+
             builder.Entity<Value>()
                 .HasData(
                     new Value {Id = 1, Name = "Value 101"},
